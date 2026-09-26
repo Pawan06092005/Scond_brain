@@ -1,0 +1,17 @@
+workflow-
+npm init -y
+npm install -D typescript
+npx tsc --init
+"rootDir": "./src",
+"outDir": "./dist",
+npm install express
+npm install -D @types/express
+npm install jsonwebtoken
+npm install mongoose
+npm install -D @types/mongoose
+
+in pakage .json = "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/index.js",
+    "dev": "npm run build && npm run start"
+  },
