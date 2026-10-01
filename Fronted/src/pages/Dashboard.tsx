@@ -96,7 +96,7 @@ function Dashboard() {
           onAddContent={(item) => setContent((prev) => [item, ...prev])}
         />
 
-        <div className='flex flex-wrap gap-4'>
+        <div className='flex flex-wrap justify-center gap-6'>
           {visibleContent.length === 0 ? (
             <div className='mt-6 text-gray-500'>No content saved yet.</div>
           ) : (
