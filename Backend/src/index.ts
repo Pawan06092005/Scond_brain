@@ -7,6 +7,9 @@ import { userMiddleware } from "./middleware";
 import cors from "cors";
 import mongoose from "mongoose";
 
+// Fields that are safe to show to visitors of a share link.
+const PUBLIC_CONTENT_FIELDS = "title link text description type";
+
 const app = express();
 app.use(express.json()); // Middleware to parse JSON request bodies.
 app.use(cors()); // Middleware to allow cross-origin requests.
@@ -55,11 +58,12 @@ app.post("/api/v1/signin", async (req, res) => {
 
 // Route 3: Add Content
 app.post("/api/v1/content", userMiddleware, async (req, res) => {
-    const { link, text, type, title } = req.body;
+    const { link, text, description, type, title } = req.body;
     // Create a new content entry linked to the logged-in user.
     const content = await ContentModel.create({
         link,
         text,
+        description,
         type,
         title,
         userId: req.userId, // userId is added by the middleware.
@@ -112,7 +116,7 @@ app.post("/api/v1/brain/share", userMiddleware, async (req, res) => {
         }
 
         // Generate a new hash for the shareable link.
-        const hash = random(10);
+        const hash = random(16);
         await LinkModel.create({ userId: req.userId, hash });
         res.json({ hash }); // Send new hash in the response.
     } else {
@@ -134,7 +138,8 @@ app.get("/api/v1/brain/:shareLink", async (req, res) => {
     }
 
     // Fetch content and user details for the shareable link.
-    const content = await ContentModel.find({ userId: link.userId });
+    // Only public fields are returned - no user ids or per-item share hashes.
+    const content = await ContentModel.find({ userId: link.userId }).select(PUBLIC_CONTENT_FIELDS);
     const user = await UserModel.findOne({ _id: link.userId });
 
     if (!user) {
@@ -146,6 +151,55 @@ app.get("/api/v1/brain/:shareLink", async (req, res) => {
         username: user.username,
         content
     }); // Send user and content details in response.
+});
+
+// Route 8: Share / unshare a single content item
+app.post("/api/v1/content/:id/share", userMiddleware, async (req, res) => {
+    const contentId = String(req.params.id);
+    const { share } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(contentId)) {
+        res.status(400).json({ message: "A valid content id is required" });
+        return;
+    }
+
+    // Only the owner can share their content.
+    const content = await ContentModel.findOne({ _id: contentId, userId: req.userId });
+    if (!content) {
+        res.status(404).json({ message: "Content not found" });
+        return;
+    }
+
+    if (share) {
+        // Reuse the existing link if this item is already shared.
+        if (!content.shareHash) {
+            content.shareHash = random(16);
+            await content.save();
+        }
+        res.json({ hash: content.shareHash });
+    } else {
+        // Remove the hash so the old link stops working.
+        await ContentModel.updateOne({ _id: contentId }, { $unset: { shareHash: 1 } });
+        res.json({ message: "Removed link" });
+    }
+});
+
+// Route 9: Get a single shared content item (public, no login)
+app.get("/api/v1/shared/item/:hash", async (req, res) => {
+    const content = await ContentModel.findOne({ shareHash: String(req.params.hash) })
+        .select(`${PUBLIC_CONTENT_FIELDS} userId`)
+        .populate<{ userId: { username: string } | null }>("userId", "username");
+
+    if (!content) {
+        res.status(404).json({ message: "Invalid share link" });
+        return;
+    }
+
+    const { title, link, text, description, type } = content;
+    res.json({
+        username: content.userId?.username || "Someone",
+        item: { _id: content._id, title, link, text, description, type }
+    });
 });
 
 // Start the server

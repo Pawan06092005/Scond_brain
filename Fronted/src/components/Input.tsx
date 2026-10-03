@@ -1,22 +1,23 @@
 import { forwardRef } from "react";
 
 // Defining the InputProps interface to specify the types for the props
-interface InputProps { 
+interface InputProps {
     placeholder: string; // Placeholder text for the input field
     type?: string; // Optional type for the input field
+    label?: string; // Optional label shown above the field
 }
 
 // Input component definition
-export const Input = forwardRef<HTMLInputElement, InputProps>(({placeholder, type}, ref) => {
+export const Input = forwardRef<HTMLInputElement, InputProps>(({placeholder, type, label}, ref) => {
     return (
-        <div>
-            {/* Input field with the provided placeholder and reference */}
-            <input 
+        <label className="block">
+            {label && <span className="mb-1.5 block text-sm font-medium text-gray-700">{label}</span>}
+            <input
                 ref={ref} // Attaching the reference to the input field
                 placeholder={placeholder} // Setting the placeholder text for the input field
                 type={type || "text"} // Defining the input type as text by default
-                className="px-4 py-2 border rounded m-2 w-full" // Tailwind CSS classes for styling the input field
+                className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
             />
-        </div>
+        </label>
     );
 });

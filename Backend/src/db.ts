@@ -25,7 +25,9 @@ const ContentSchema = new Schema({
     title: String,                          // Title of the content
     link: { type: String, default: "" }, // URL or link to the content
     text: { type: String, default: "" }, // Text used by note content
-    type: { type: String, enum: ["twitter", "youtube", "notes"], required: true },
+    description: { type: String, default: "" },
+    type: { type: String, enum: ["twitter", "youtube", "notes", "linkedin"], required: true },
+    shareHash: { type: String, unique: true, sparse: true }, // Set only while this single item is shared
     tags: [{ type: mongoose.Types.ObjectId, ref: "tag" }], // Array of tag IDs, referencing the 'tag' collection
     userId: {
         type: mongoose.Types.ObjectId, 
