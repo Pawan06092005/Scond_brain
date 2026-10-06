@@ -20,6 +20,11 @@ function Dashboard({ initialAuthMode = null }: { initialAuthMode?: AuthMode | nu
   const [content, setContent] = useState<ContentItem[]>([])
   const [contentFilter, setContentFilter] = useState<ContentFilter>('all')
   const username = localStorage.getItem('username') || 'User'
+  const isSignedIn = Boolean(localStorage.getItem('token'))
+
+  // "Good morning" / "Good afternoon" / "Good evening" based on the local time
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const visibleContent = contentFilter === 'all'
     ? content
     : content.filter((item) => item.type === contentFilter)
@@ -134,7 +139,15 @@ function Dashboard({ initialAuthMode = null }: { initialAuthMode?: AuthMode | nu
                 </svg>
               </button>
               <div>
-                <p className='text-sm text-gray-500'>Welcome back, <span className='font-medium text-gray-700'>{username}</span> 🙏</p>
+                {isSignedIn ? (
+                  <p className='flex items-center gap-1.5 text-sm text-gray-500'>
+                    {greeting},
+                    <span className='font-display text-base font-semibold capitalize text-purple-700'>{username}</span>
+                    <span aria-hidden='true' className='inline-block origin-[70%_70%] animate-wave'>👋</span>
+                  </p>
+                ) : (
+                  <p className='text-sm text-gray-500'>Welcome to <span className='font-semibold text-purple-600'>Brainly</span></p>
+                )}
                 <h1 className='text-2xl font-bold tracking-tight text-gray-900'>
                   {pageTitle}
                   <span className='ml-2 align-middle text-base font-medium text-gray-400'>{visibleContent.length}</span>

@@ -12,6 +12,7 @@ interface AuthModalProps {
 
 export function AuthModal({ mode, onModeChange, onClose, onAuthenticated }: AuthModalProps) {
     const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,8 +25,12 @@ export function AuthModal({ mode, onModeChange, onClose, onAuthenticated }: Auth
         event.preventDefault();
         setMessage("");
 
-        if (!username.trim() || !password.trim()) {
-            setMessage("Enter both a username and password.");
+        if (isSigningUp && !username.trim()) {
+            setMessage("Choose a username.");
+            return;
+        }
+        if (!email.trim() || !password.trim()) {
+            setMessage("Enter both your email and password.");
             return;
         }
 
@@ -34,10 +39,10 @@ export function AuthModal({ mode, onModeChange, onClose, onAuthenticated }: Auth
             const response = await fetch(`/api/v1/${mode}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    username: username.trim().toLowerCase(),
-                    password: password.trim(),
-                }),
+                // Sign up sends username + email + password, sign in sends email + password
+                body: JSON.stringify(isSigningUp
+                    ? { username: username.trim().toLowerCase(), email: email.trim().toLowerCase(), password: password.trim() }
+                    : { email: email.trim().toLowerCase(), password: password.trim() }),
             });
             const data = await response.json();
 
@@ -59,7 +64,7 @@ export function AuthModal({ mode, onModeChange, onClose, onAuthenticated }: Auth
             }
 
             localStorage.setItem("token", data.token);
-            localStorage.setItem("username", data.username || username.trim().toLowerCase());
+            localStorage.setItem("username", data.username || email.trim().toLowerCase());
             await onAuthenticated();
             onClose();
         } catch {
@@ -97,12 +102,24 @@ export function AuthModal({ mode, onModeChange, onClose, onAuthenticated }: Auth
                 </div>
 
                 <form onSubmit={submit} className="flex flex-col gap-4">
+                    {/* Username is only needed when creating an account */}
+                    {isSigningUp && (
+                        <input
+                            value={username}
+                            onChange={(event) => setUsername(event.target.value)}
+                            autoComplete="username"
+                            placeholder="Username"
+                            aria-label="Username"
+                            className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                        />
+                    )}
                     <input
-                        value={username}
-                        onChange={(event) => setUsername(event.target.value)}
-                        autoComplete="username"
-                        placeholder="Username"
-                        aria-label="Username"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        type="email"
+                        autoComplete="email"
+                        placeholder="Email address"
+                        aria-label="Email address"
                         className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
                     />
                     <input

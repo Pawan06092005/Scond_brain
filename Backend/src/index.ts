@@ -7,6 +7,9 @@ import { userMiddleware } from "./middleware";
 import cors from "cors";
 import mongoose from "mongoose";
 
+// Simple "something@something.something" check for email addresses.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // Fields that are safe to show to visitors of a share link.
 const PUBLIC_CONTENT_FIELDS = "title link text description type";
 
@@ -17,21 +20,28 @@ app.use(cors()); // Middleware to allow cross-origin requests.
 // Route 1: User Signup
 app.post("/api/v1/signup", async (req, res) => {
     const username = req.body.username?.trim();
+    const email = req.body.email?.trim().toLowerCase();
     const password = req.body.password?.trim();
 
-    // Reject if username or password is missing
-    if (!username || !password) {
-        res.status(400).json({ message: "Username and password are required" });
+    // Reject if any field is missing
+    if (!username || !email || !password) {
+        res.status(400).json({ message: "Username, email and password are required" });
+        return;
+    }
+    if (!EMAIL_PATTERN.test(email)) {
+        res.status(400).json({ message: "Please enter a valid email address" });
         return;
     }
 
     try {
-        await UserModel.create({ username, password });
+        await UserModel.create({ username, email, password });
         res.json({ message: "User signed up" });
     } catch (e: any) {
         console.error("Signup error - code:", e.code, "message:", e.message);
         if (e.code === 11000) {
-            res.status(409).json({ message: "User already exists" });
+            // Tell the user which field is already taken
+            const field = e.keyPattern?.email ? "email" : "username";
+            res.status(409).json({ message: field === "email" ? "An account with this email already exists" : "This username is already taken" });
         } else {
             res.status(500).json({ message: "Internal server error", error: e.message });
         }
@@ -40,11 +50,16 @@ app.post("/api/v1/signup", async (req, res) => {
 
 // Route 2: User Signin
 app.post("/api/v1/signin", async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password?.trim();
+
+    if (!email || !password) {
+        res.status(400).json({ message: "Email and password are required" });
+        return;
+    }
 
     // Find a user with the provided credentials.
-    const existingUser = await UserModel.findOne({ username, password });
+    const existingUser = await UserModel.findOne({ email, password });
     if (existingUser) {
         // Generate a JWT token with the user's ID.
         const token = jwt.sign({ id: existingUser._id }, JWT_SECRET);

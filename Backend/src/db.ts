@@ -10,9 +10,11 @@ mongoose.connect(process.env.MONGO_URI as string)
     .catch((err) => console.error("MongoDB connection failed:", err.message));
 
 // Defining a schema for the 'User' collection
-// Each user will have a unique 'username' and a 'password'
+// Each user will have a unique 'username', a unique 'email' and a 'password'
 const UserSchema = new Schema({
     username: { type: String, unique: true }, // Unique username to ensure no duplicates
+    // Used to sign in. Sparse so older accounts created before email existed don't clash.
+    email: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     password: { type: String }               // Password for the user
 });
 

@@ -21,7 +21,7 @@ export function SidebarItems({text,icon,onClick,active,count}:{
         <span className={`flex w-6 items-center justify-center transition-colors ${active ? "text-purple-600" : "text-gray-400 group-hover:text-gray-700"}`}>
           {icon}
         </span>
-        <span className="flex-1 text-left">
+        <span className="flex-1 text-left font-display tracking-wide">
           {text}
         </span>
         {count !== undefined && (
