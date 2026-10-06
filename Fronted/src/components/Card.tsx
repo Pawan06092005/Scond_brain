@@ -3,6 +3,7 @@ import { DeleteIcon } from "../icons/DeleteIcon";
 import { ShareIcon } from "../icons/ShareIcon";
 import { ExternalLinkIcon } from "../icons/ExternalLinkIcon";
 import { LinkedinIcon } from "../icons/Linkdin";
+import { FormsIcon } from "../icons/FormsIcon";
 import { contentTypes, type ContentType } from "../contentTypes";
 
 interface CardProps {
@@ -98,34 +99,31 @@ export function Card({ id, title, link, text, description, type, onDelete, onSha
     };
 
     return (
-        <article className={`group flex w-full flex-col ${expanded ? "" : "h-[24rem]"} overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-900/5 animate-card-in`}>
+        <article className={`group relative flex w-full flex-col ${expanded ? "" : "h-[24rem]"} overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm ring-1 ring-black/[0.02] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-900/10 animate-card-in`}>
+            {/* Colour strip that tells the content type at a glance */}
+            <div className={`h-1 w-full shrink-0 ${meta.accentClass} opacity-80 transition-opacity group-hover:opacity-100`} />
+
             {/* Header Section */}
             <header className="flex shrink-0 items-start gap-3 px-4 pt-4 pb-3">
-                {/* Type logo - it already says what kind of content this is */}
-                <div title={meta.label} className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${meta.chipClass}`}>
+                {/* Type logo */}
+                <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-black/5 transition-transform duration-300 group-hover:scale-105 ${meta.chipClass}`}>
                     {meta.icon}
                 </div>
 
-                {/* Title */}
-                <h3 className={`min-w-0 flex-1 self-center font-semibold leading-snug text-gray-900 ${expanded ? "text-lg" : "line-clamp-2"}`} title={title}>
-                    {title}
-                </h3>
+                {/* Type label + title */}
+                <div className="min-w-0 flex-1">
+                    <div className={`text-[11px] font-semibold uppercase tracking-wider ${meta.labelClass}`}>
+                        {meta.label}
+                    </div>
+                    <h3 className={`mt-0.5 font-semibold leading-snug text-gray-900 ${expanded ? "text-lg" : "line-clamp-2 text-[15px]"}`} title={title}>
+                        {title}
+                    </h3>
+                </div>
 
-                {/* Open original + Share + Delete */}
-                <div className="flex shrink-0 items-center gap-1">
-                    {type !== "notes" && (
-                        <a
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Open original"
-                            title="Open original"
-                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-purple-50 hover:text-purple-600"
-                        >
-                            <ExternalLinkIcon />
-                        </a>
-                    )}
-                    {!readOnly && onShare && id && (
+                {/* Share + Delete: fade in on hover where hovering is possible, always visible on touch screens */}
+                {!readOnly && (
+                <div className={`flex shrink-0 items-center gap-0.5 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100 ${confirmingDelete ? "" : "[@media(hover:hover)]:opacity-0"}`}>
+                    {onShare && id && (
                         <button
                             type="button"
                             onClick={() => onShare(id, title)}
@@ -136,13 +134,14 @@ export function Card({ id, title, link, text, description, type, onDelete, onSha
                             <ShareIcon />
                         </button>
                     )}
-                    {!readOnly && onDelete && (
+                    {onDelete && (
                     <button
                         type="button"
                         onClick={handleDelete}
                         aria-label={confirmingDelete ? "Confirm delete" : "Delete"}
+                        title={confirmingDelete ? "Click again to delete" : "Delete"}
                         className={`flex items-center gap-1 rounded-lg p-2 text-xs font-medium transition-all duration-200 [&_svg]:size-4 ${confirmingDelete
-                            ? "bg-red-600 px-2.5 text-white hover:bg-red-700"
+                            ? "bg-red-600 px-2.5 text-white shadow-sm hover:bg-red-700"
                             : "text-gray-400 hover:bg-red-50 hover:text-red-600"}`}
                     >
                         <DeleteIcon />
@@ -150,13 +149,14 @@ export function Card({ id, title, link, text, description, type, onDelete, onSha
                     </button>
                     )}
                 </div>
+                )}
             </header>
 
             {/* Content Section */}
             <div className={`flex-1 px-4 pb-4 ${expanded ? "" : "thin-scroll overflow-y-auto"}`}>
                 {/* Note content */}
                 {type === "notes" && (
-                    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-700">{text}</p>
+                    <p className="whitespace-pre-wrap break-words rounded-xl bg-purple-50/40 p-3.5 text-sm leading-relaxed text-gray-700 ring-1 ring-inset ring-purple-100/70">{text}</p>
                 )}
 
                 {/* YouTube embed */}
@@ -209,18 +209,50 @@ export function Card({ id, title, link, text, description, type, onDelete, onSha
                     )
                 )}
 
+                {/* Google Form - opens in a new tab so it can be filled in */}
+                {type === "forms" && (
+                    <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group/form block overflow-hidden rounded-xl ring-1 ring-violet-100 transition-shadow hover:shadow-md hover:shadow-violet-900/10"
+                    >
+                        <div className="flex items-center gap-3 bg-gradient-to-br from-violet-600 to-purple-600 px-4 py-5 text-white [&_svg]:size-7">
+                            <FormsIcon />
+                            <div className="min-w-0">
+                                <div className="text-sm font-semibold">Google Form</div>
+                                <div className="truncate text-xs text-white/80">{getDomain(link)}</div>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 bg-violet-50/60 px-4 py-3 text-sm font-medium text-violet-700 transition-colors group-hover/form:bg-violet-100/70 [&_svg]:size-4">
+                            Open form
+                            <ExternalLinkIcon />
+                        </div>
+                    </a>
+                )}
+
                 {description && (
-                    <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-600">
+                    <p className="mt-3 whitespace-pre-wrap break-words border-l-2 border-gray-200 pl-3 text-sm leading-relaxed text-gray-600">
                         {description}
                     </p>
                 )}
             </div>
 
-            {/* Footer: where the link points to */}
+            {/* Footer: where the link points to - click to open the original */}
             {type !== "notes" && link && (
-                <footer className="shrink-0 truncate border-t border-gray-100 bg-gray-50/60 px-4 py-2 text-xs text-gray-400">
-                    {getDomain(link)}
-                </footer>
+                <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open original"
+                    className="flex shrink-0 items-center justify-between gap-2 border-t border-gray-100 bg-gray-50/70 px-4 py-2.5 text-xs text-gray-500 transition-colors hover:bg-purple-50 hover:text-purple-700 [&_svg]:size-3.5"
+                >
+                    <span className="truncate font-medium">{getDomain(link)}</span>
+                    <span className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
+                        Open
+                        <ExternalLinkIcon />
+                    </span>
+                </a>
             )}
         </article>
     );

@@ -13,6 +13,17 @@ interface CreateContentModalProps {
     onAddContent?: (item: ContentItem) => void;
 }
 
+// Google Forms links shared on WhatsApp look like forms.gle/... or docs.google.com/forms/...
+function isGoogleFormLink(link: string): boolean {
+    try {
+        const url = new URL(link);
+        return url.hostname === "forms.gle"
+            || (url.hostname === "docs.google.com" && url.pathname.startsWith("/forms/"));
+    } catch {
+        return false;
+    }
+}
+
 const textareaClass = "w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-purple-500 focus:ring-4 focus:ring-purple-100";
 
 // CreateContentModal component definition
@@ -57,6 +68,11 @@ export function CreateContentModal({ open, onClose, onAddContent }: CreateConten
         }
         if (type === "notes" ? !text : !link) {
             setError(type === "notes" ? "Your note is empty." : "Please paste a link.");
+            return;
+        }
+
+        if (type === "forms" && link && !isGoogleFormLink(link)) {
+            setError("That doesn't look like a Google Form link (forms.gle/... or docs.google.com/forms/...).");
             return;
         }
 
@@ -124,7 +140,7 @@ export function CreateContentModal({ open, onClose, onAddContent }: CreateConten
                 </div>
 
                 {/* Content type selection */}
-                <div className="mb-5 grid grid-cols-4 gap-2">
+                <div className="mb-5 grid grid-cols-5 gap-2">
                     {contentTypeOrder.map((option) => {
                         const selected = type === option;
                         return (

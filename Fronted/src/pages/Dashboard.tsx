@@ -30,6 +30,7 @@ function Dashboard({ initialAuthMode = null }: { initialAuthMode?: AuthMode | nu
     youtube: 0,
     twitter: 0,
     linkedin: 0,
+    forms: 0,
     notes: 0,
   }
   content.forEach((item) => {
