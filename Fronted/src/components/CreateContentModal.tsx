@@ -2,9 +2,11 @@ import { useEffect, useRef, useState, type FormEvent } from "react"; // Importin
 import { CrossIcon } from "../icons/CrossIcon"; // Importing the close icon
 import { Button } from "./Button"; // Importing the Button component
 import { Input } from "./Input"; // Importing the Input component for form inputs
-import { BACKEND_URL } from "../config"; // Importing the backend URL for API requests
 import axios from "axios"; // Importing axios for HTTP requests
 import { contentTypeOrder, contentTypes, type ContentItem, type ContentType } from "../contentTypes";
+
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Interface for the props passed to the CreateContentModal component
 interface CreateContentModalProps {
