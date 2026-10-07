@@ -2,6 +2,9 @@ import { useRef } from "react";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export function Signin() {
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -15,7 +18,7 @@ export function Signin() {
       return;
     }
 
-    const response = await fetch(`/api/v1/signin`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

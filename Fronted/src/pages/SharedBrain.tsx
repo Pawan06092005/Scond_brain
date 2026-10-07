@@ -4,6 +4,9 @@ import { Card } from "../components/Card";
 import { SharedLayout, SharedLoading, SharedNotFound } from "../components/SharedLayout";
 import { contentTypeOrder, contentTypes, type ContentFilter, type ContentItem } from "../contentTypes";
 
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 type State =
     | { status: "loading" }
     | { status: "error" }
@@ -16,7 +19,7 @@ export default function SharedBrain() {
     const [filter, setFilter] = useState<ContentFilter>("all");
 
     useEffect(() => {
-        fetch(`/api/v1/brain/${hash}`)
+        fetch(`${BACKEND_URL}/api/v1/brain/${hash}`)
             .then((response) => (response.ok ? response.json() : Promise.reject()))
             .then((data) => setState({ status: "ready", username: data.username, content: data.content }))
             .catch(() => setState({ status: "error" }));

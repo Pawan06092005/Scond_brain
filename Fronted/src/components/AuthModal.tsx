@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { CrossIcon } from "../icons/CrossIcon";
 
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export type AuthMode = "signin" | "signup";
 
 interface AuthModalProps {
@@ -36,7 +39,7 @@ export function AuthModal({ mode, onModeChange, onClose, onAuthenticated }: Auth
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`/api/v1/${mode}`, {
+            const response = await fetch(`${BACKEND_URL}/api/v1/${mode}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // Sign up sends username + email + password, sign in sends email + password

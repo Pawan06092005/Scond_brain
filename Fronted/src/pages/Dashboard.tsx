@@ -10,6 +10,10 @@ import { ShareIcon } from '../icons/ShareIcon'
 import { BrainIcon } from '../icons/BrainIcon'
 import { useEffect, useState } from 'react'
 import { contentTypes, type ContentFilter, type ContentItem } from '../contentTypes'
+
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 // import React from 'react'
 
 function Dashboard({ initialAuthMode = null }: { initialAuthMode?: AuthMode | null }) {
@@ -52,7 +56,7 @@ function Dashboard({ initialAuthMode = null }: { initialAuthMode?: AuthMode | nu
     }
 
     try {
-      const response = await fetch('/api/v1/content', {
+      const response = await fetch(`${BACKEND_URL}/api/v1/content`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -75,7 +79,7 @@ function Dashboard({ initialAuthMode = null }: { initialAuthMode?: AuthMode | nu
 
   const deleteContent = async (id: string) => {
     const token = localStorage.getItem('token')
-    const response = await fetch('/api/v1/content', {
+    const response = await fetch(`${BACKEND_URL}/api/v1/content`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

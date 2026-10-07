@@ -4,6 +4,9 @@ import { Card } from "../components/Card";
 import { SharedLayout, SharedNotFound } from "../components/SharedLayout";
 import type { ContentItem } from "../contentTypes";
 
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 type State =
     | { status: "loading" }
     | { status: "error" }
@@ -15,7 +18,7 @@ export default function SharedItem() {
     const [state, setState] = useState<State>({ status: "loading" });
 
     useEffect(() => {
-        fetch(`/api/v1/shared/item/${hash}`)
+        fetch(`${BACKEND_URL}/api/v1/shared/item/${hash}`)
             .then((response) => (response.ok ? response.json() : Promise.reject()))
             .then((data) => setState({ status: "ready", username: data.username, item: data.item }))
             .catch(() => setState({ status: "error" }));

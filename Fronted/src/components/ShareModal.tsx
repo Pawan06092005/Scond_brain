@@ -3,6 +3,9 @@ import { CrossIcon } from "../icons/CrossIcon";
 import { ShareIcon } from "../icons/ShareIcon";
 import { Button } from "./Button";
 
+// Backend URL comes from VITE_BACKEND_URL in Fronted/.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 // What is being shared: the whole brain, or one content item
 export type ShareTarget =
     | { kind: "brain" }
@@ -32,8 +35,8 @@ function shareOrigin(): string {
 // API endpoint and visitor URL for each kind of share
 function shareConfig(target: ShareTarget) {
     return target.kind === "brain"
-        ? { endpoint: "/api/v1/brain/share", pagePath: "/share/" }
-        : { endpoint: `/api/v1/content/${target.id}/share`, pagePath: "/share/item/" };
+        ? { endpoint: `${BACKEND_URL}/api/v1/brain/share`, pagePath: "/share/" }
+        : { endpoint: `${BACKEND_URL}/api/v1/content/${target.id}/share`, pagePath: "/share/item/" };
 }
 
 async function setSharing(target: ShareTarget, share: boolean): Promise<string | undefined> {
